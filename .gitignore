@@ -1,0 +1,8 @@
+node_modules/
+sessions/
+*.log
+.env
+.DS_Store
+playwright-report/
+test-results/
+

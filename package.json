@@ -1,0 +1,25 @@
+{
+  "name": "insta-scrapper",
+  "version": "1.0.0",
+  "description": "Instagram automation tool with Playwright supporting multiple accounts",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "install-browsers": "playwright install chromium"
+  },
+  "keywords": [
+    "instagram",
+    "automation",
+    "playwright"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "playwright": "^1.40.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0"
+  }
+}
+
