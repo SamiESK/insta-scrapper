@@ -5,4 +5,17 @@ sessions/
 .DS_Store
 playwright-report/
 test-results/
+logs/
+dist/
+build/
+.vite/
+*.local
 
+# Prisma
+prisma/migrations/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,0 +1,48 @@
+services:
+  backend:
+    build: ../backend
+    container_name: instagram-backend
+    env_file: ./.env
+    ports:
+      - "4000:4000"
+      - "5900-5999:5900-5999"  # VNC port range (one per account, up to 100 accounts)
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ../sessions:/app/sessions
+      - ../logs:/app/logs
+    restart: unless-stopped
+
+  frontend:
+    build: ../frontend
+    container_name: instagram-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  db:
+    image: postgres:16
+    container_name: instagram-db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: instagram_automation
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: instagram-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+volumes:
+  db_data:
+

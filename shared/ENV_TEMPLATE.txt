@@ -1,0 +1,72 @@
+# ============================================
+# Instagram Automation - Environment Variables
+# ============================================
+# Copy this file to .env and fill in your values
+# Location: shared/.env
+
+# ============================================
+# Database Configuration
+# ============================================
+# Format: postgresql://username:password@host:port/database_name
+# For Docker Compose: use 'db' as hostname
+# For Local Development: use 'localhost'
+DATABASE_URL=postgresql://user:password@db:5432/instagram_automation
+
+# ============================================
+# Redis Configuration
+# ============================================
+# For Docker Compose: use 'redis' as hostname
+# For Local Development: use 'localhost'
+REDIS_URL=redis://redis:6379
+
+# ============================================
+# Server Configuration
+# ============================================
+PORT=4000
+NODE_ENV=development
+
+# ============================================
+# Proxy Management (Optional)
+# ============================================
+# Add proxies separated by commas for account isolation
+# Leave empty if not using proxies: PROXY_LIST=
+# Example with proxies:
+# PROXY_LIST=http://proxy1.com:8080,http://proxy2.com:8080,http://proxy3.com:8080
+PROXY_LIST=
+
+# ============================================
+# Playwright Configuration
+# ============================================
+# Set to 'true' for headless mode (no browser window)
+# Set to 'false' to see browser windows (useful for debugging)
+PLAYWRIGHT_HEADLESS=false
+
+# ============================================
+# Bot Configuration
+# ============================================
+# Maximum number of bots that can run concurrently
+# Adjust based on your server capacity:
+# - Low-end server: 5-10
+# - Mid-range server: 10-20
+# - High-end server: 20-50
+MAX_CONCURRENT_BOTS=10
+
+# ============================================
+# Logging Configuration
+# ============================================
+# Options: error, warn, info, debug
+# - error: Only errors
+# - warn: Warnings and errors
+# - info: Info, warnings, and errors (recommended)
+# - debug: All logs including debug info
+LOG_LEVEL=info
+
+# ============================================
+# Encryption Key (IMPORTANT!)
+# ============================================
+# Used to encrypt/decrypt account passwords
+# Generate a secure key: openssl rand -hex 32
+# Keep this secret and never commit it to git!
+# If you change this, all encrypted passwords will be invalid
+ENCRYPTION_KEY=your-32-character-hex-key-here-change-this
+
