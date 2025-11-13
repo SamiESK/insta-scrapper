@@ -26,7 +26,8 @@
     "bullmq": "^5.1.9",
     "ioredis": "^5.3.2",
     "playwright": "^1.40.0",
-    "winston": "^3.11.0"
+    "winston": "^3.11.0",
+    "openai": "^4.20.0"
   },
   "devDependencies": {
     "prisma": "^5.7.1"

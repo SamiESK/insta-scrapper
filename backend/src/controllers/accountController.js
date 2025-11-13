@@ -16,6 +16,7 @@ export async function getAccounts(req, res, next) {
         status: true,
         proxy: true,
         sessionPath: true,
+        openaiPromptId: true,
         lastActive: true,
         createdAt: true,
         updatedAt: true,
@@ -76,7 +77,7 @@ export async function getAccount(req, res, next) {
 
 export async function createAccount(req, res, next) {
   try {
-    const { username, password, proxy } = req.body;
+    const { username, password, proxy, openaiPromptId } = req.body;
 
     if (!username) {
       return res.status(400).json({ error: 'Username is required' });
@@ -90,6 +91,7 @@ export async function createAccount(req, res, next) {
         username,
         password: encryptedPassword,
         proxy: proxy || getProxyForAccount(Date.now()), // Temporary ID for proxy assignment
+        openaiPromptId: openaiPromptId || null,
         sessionPath: null,
         status: 'idle'
       }
@@ -118,12 +120,13 @@ export async function createAccount(req, res, next) {
 export async function updateAccount(req, res, next) {
   try {
     const { id } = req.params;
-    const { username, password, proxy, status } = req.body;
+    const { username, password, proxy, status, openaiPromptId } = req.body;
 
     const updateData = {
       ...(username && { username }),
       ...(proxy !== undefined && { proxy }),
-      ...(status && { status })
+      ...(status && { status }),
+      ...(openaiPromptId !== undefined && { openaiPromptId })
     };
 
     // Encrypt password if provided

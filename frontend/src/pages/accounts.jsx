@@ -8,7 +8,7 @@ export default function Accounts() {
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [formData, setFormData] = useState({ username: '', password: '', proxy: '' });
+  const [formData, setFormData] = useState({ username: '', password: '', proxy: '', openaiPromptId: '' });
 
   useEffect(() => {
     loadAccounts();
@@ -30,7 +30,7 @@ export default function Accounts() {
     e.preventDefault();
     try {
       await accountsAPI.create(formData);
-      setFormData({ username: '', password: '', proxy: '' });
+      setFormData({ username: '', password: '', proxy: '', openaiPromptId: '' });
       setShowAddForm(false);
       loadAccounts();
     } catch (error) {
@@ -125,6 +125,22 @@ export default function Accounts() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 placeholder="http://proxy:port"
               />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                OpenAI Prompt ID *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.openaiPromptId}
+                onChange={(e) => setFormData({ ...formData, openaiPromptId: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="pmpt_691521bcde108196b23a222e5df68b1b07b150b88830da70"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Each account needs its own unique OpenAI prompt ID (e.g., pmpt_691521bcde108196b23a222e5df68b1b07b150b88830da70)
+              </p>
             </div>
             <button
               type="submit"
