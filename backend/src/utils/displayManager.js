@@ -69,14 +69,21 @@ async function startXvfb(display) {
   logger.info(`Starting Xvfb for display :${display}`);
   
   const child = exec(command, (error) => {
-    if (error) {
+    if (error && !error.message.includes('already in use')) {
       logger.error(`Xvfb error for display :${display}:`, error);
     }
   });
   
-  // Wait a bit for Xvfb to start
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  // Wait for Xvfb to start and verify it's running
+  for (let i = 0; i < 10; i++) {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    if (await isDisplayRunning(display)) {
+      logger.info(`Xvfb for display :${display} is running`);
+      return child.pid;
+    }
+  }
   
+  logger.warn(`Xvfb for display :${display} may not have started properly`);
   return child.pid;
 }
 
@@ -91,7 +98,8 @@ async function startVncServer(display, port) {
   const passwordFile = `/root/.vnc/passwd_${display}`;
   try {
     await execAsync(`mkdir -p /root/.vnc`);
-    await execAsync(`echo "instagram" | x11vnc -storepasswd ${passwordFile}`);
+    // Use non-interactive method to create password file
+    await execAsync(`echo "instagram" | x11vnc -storepasswd - ${passwordFile} 2>/dev/null || true`);
   } catch (error) {
     logger.warn(`Could not create VNC password file: ${error.message}`);
   }
@@ -100,14 +108,21 @@ async function startVncServer(display, port) {
   logger.info(`Starting VNC server for display :${display} on port ${port}`);
   
   const child = exec(command, (error) => {
-    if (error) {
+    if (error && !error.message.includes('Address already in use')) {
       logger.error(`VNC server error for display :${display}:`, error);
     }
   });
   
-  // Wait a bit for VNC server to start
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  // Wait for VNC server to start and verify it's running
+  for (let i = 0; i < 10; i++) {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    if (await isVncRunning(port)) {
+      logger.info(`VNC server for display :${display} is running on port ${port}`);
+      return child.pid;
+    }
+  }
   
+  logger.warn(`VNC server for display :${display} may not have started properly`);
   return child.pid;
 }
 

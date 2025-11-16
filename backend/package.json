@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js",
+    "dev": "nodemon --watch src --ext js --exec node src/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio"
@@ -26,11 +26,11 @@
     "bullmq": "^5.1.9",
     "ioredis": "^5.3.2",
     "playwright": "^1.40.0",
-    "winston": "^3.11.0",
-    "openai": "^4.20.0"
+    "winston": "^3.11.0"
   },
   "devDependencies": {
-    "prisma": "^5.7.1"
+    "prisma": "^5.7.1",
+    "nodemon": "^3.0.2"
   }
 }
 

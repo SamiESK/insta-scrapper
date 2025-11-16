@@ -70,13 +70,3 @@ LOG_LEVEL=info
 # If you change this, all encrypted passwords will be invalid
 ENCRYPTION_KEY=your-32-character-hex-key-here-change-this
 
-# ============================================
-# OpenAI Configuration
-# ============================================
-# Your OpenAI API key for message generation
-# Get your API key from: https://platform.openai.com/api-keys
-# The bot will use ChatGPT to generate outreach messages
-# Default prompt: "Send me an outreach message to this user"
-# You can customize the prompt per account in the account settings
-OPENAI_API_KEY=your_openai_api_key_here
-

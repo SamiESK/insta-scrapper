@@ -8,7 +8,8 @@ export default function Accounts() {
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [formData, setFormData] = useState({ username: '', password: '', proxy: '', openaiPromptId: '' });
+  const [formData, setFormData] = useState({ username: '', password: '', proxy: '' });
+  const [editingMessages, setEditingMessages] = useState({});
 
   useEffect(() => {
     loadAccounts();
@@ -18,6 +19,8 @@ export default function Accounts() {
     try {
       setLoading(true);
       const data = await accountsAPI.getAll();
+      console.log('Loaded accounts:', data);
+      console.log('First account outreachMessage:', data[0]?.outreachMessage);
       setAccounts(data);
     } catch (error) {
       console.error('Error loading accounts:', error);
@@ -30,7 +33,7 @@ export default function Accounts() {
     e.preventDefault();
     try {
       await accountsAPI.create(formData);
-      setFormData({ username: '', password: '', proxy: '', openaiPromptId: '' });
+      setFormData({ username: '', password: '', proxy: '' });
       setShowAddForm(false);
       loadAccounts();
     } catch (error) {
@@ -63,6 +66,24 @@ export default function Accounts() {
       loadAccounts();
     } catch (error) {
       alert(`Error deleting account: ${error.message}`);
+    }
+  };
+
+  const handleMessageChange = (accountId, value) => {
+    setEditingMessages({ ...editingMessages, [accountId]: value });
+  };
+
+  const handleSaveMessage = async (accountId) => {
+    try {
+      const message = editingMessages[accountId] || '';
+      await accountsAPI.update(accountId, { outreachMessage: message });
+      // Clear editing state for this account
+      const newEditing = { ...editingMessages };
+      delete newEditing[accountId];
+      setEditingMessages(newEditing);
+      loadAccounts();
+    } catch (error) {
+      alert(`Error saving message: ${error.message}`);
     }
   };
 
@@ -126,22 +147,6 @@ export default function Accounts() {
                 placeholder="http://proxy:port"
               />
             </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                OpenAI Prompt ID *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.openaiPromptId}
-                onChange={(e) => setFormData({ ...formData, openaiPromptId: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="pmpt_691521bcde108196b23a222e5df68b1b07b150b88830da70"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Each account needs its own unique OpenAI prompt ID (e.g., pmpt_691521bcde108196b23a222e5df68b1b07b150b88830da70)
-              </p>
-            </div>
             <button
               type="submit"
               className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
@@ -156,7 +161,7 @@ export default function Accounts() {
         <ul className="divide-y divide-gray-200">
           {accounts.map((account) => (
             <li key={account.id} className="px-6 py-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <div className="flex items-center">
                     <h3 className="text-lg font-medium text-gray-900">{account.username}</h3>
@@ -168,7 +173,7 @@ export default function Accounts() {
                     <p>Last Active: {new Date(account.lastActive).toLocaleString()}</p>
                   </div>
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex space-x-2 ml-4">
                   {account.status === 'running' ? (
                     <button
                       onClick={() => handleStop(account.id)}
@@ -197,6 +202,29 @@ export default function Accounts() {
                     Delete
                   </button>
                 </div>
+              </div>
+              
+              {/* Outreach Message Section */}
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <label htmlFor={`message-${account.id}`} className="block text-sm font-medium text-gray-700 mb-2">
+                  Outreach Message
+                </label>
+                <textarea
+                  id={`message-${account.id}`}
+                  value={editingMessages[account.id] !== undefined ? editingMessages[account.id] : (account.outreachMessage || '')}
+                  onChange={(e) => handleMessageChange(account.id, e.target.value)}
+                  onBlur={() => {
+                    if (editingMessages[account.id] !== undefined) {
+                      handleSaveMessage(account.id);
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md resize-y min-h-[100px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter the message to send to content creators..."
+                  rows={4}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  This message will be sent to all content creators. Edit and click outside to save.
+                </p>
               </div>
               {selectedAccount?.id === account.id && (
                 <div className="mt-4">

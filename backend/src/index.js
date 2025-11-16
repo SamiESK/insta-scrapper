@@ -9,6 +9,11 @@ import outreachRoutes from './routes/outreach.js';
 import logRoutes from './routes/logs.js';
 import { logger } from './utils/logger.js';
 import { config } from './config/env.js';
+// Log startup time to verify hot-reload is working
+const startupTime = new Date().toISOString();
+console.log(`\n🔥 [HOT-RELOAD] Server starting at ${startupTime} 🔥`);
+console.log(`📁 Watching for file changes in: ${import.meta.url}\n`);
+
 import './workers/botWorker.js'; // Start the worker
 
 const __filename = fileURLToPath(import.meta.url);

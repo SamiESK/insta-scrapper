@@ -14,7 +14,7 @@ model Account {
   status         String   @default("idle")
   proxy          String?
   sessionPath    String?
-  openaiPromptId String?  // OpenAI prompt ID for message generation
+  outreachMessage String?  // Outreach message text to send to content creators
   lastActive     DateTime @default(now())
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt

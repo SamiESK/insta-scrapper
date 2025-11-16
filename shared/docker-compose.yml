@@ -5,6 +5,7 @@ services:
     env_file: ./.env
     ports:
       - "4000:4000"
+      - "5555:5555"  # Prisma Studio
       - "5900-5999:5900-5999"  # VNC port range (one per account, up to 100 accounts)
     depends_on:
       - db
@@ -12,6 +13,10 @@ services:
     volumes:
       - ../sessions:/app/sessions
       - ../logs:/app/logs
+      # Mount source code for hot-reloading (exclude node_modules for performance)
+      # Note: package.json changes require rebuild to install new dependencies
+      - ../backend/src:/app/src
+      - ../backend/prisma:/app/prisma
     restart: unless-stopped
 
   frontend:

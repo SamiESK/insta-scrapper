@@ -34,8 +34,9 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files and nodemon config
 COPY package*.json ./
+COPY nodemon.json* ./
 COPY prisma ./prisma/
 COPY src ./src/
 
@@ -46,10 +47,7 @@ RUN npm install
 RUN npx playwright install chromium
 RUN npx playwright install-deps chromium
 
-# Copy source code
-COPY . .
-
-# Generate Prisma client
+# Generate Prisma client (source code will be mounted as volume for hot-reloading)
 RUN npx prisma generate
 
 # Expose ports (4000 for API, 5900-5999 for VNC per account)
@@ -58,10 +56,12 @@ EXPOSE 5900-5999
 
 # Create startup script
 # Note: VNC servers are started dynamically per account by displayManager.js
+# Use 'npm run dev' for hot-reloading with --watch, or 'npm start' for production
 RUN echo '#!/bin/sh\n\
 # Start the Node.js server\n\
 # VNC servers will be started automatically when accounts are started\n\
-npm start\n\
+# Use dev mode for hot-reloading (auto-restart on file changes)\n\
+npm run dev\n\
 ' > /start.sh && chmod +x /start.sh
 
 # Start server

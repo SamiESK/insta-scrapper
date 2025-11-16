@@ -22,7 +22,9 @@ export const botWorker = new Worker(
       });
 
       if (!account) {
-        throw new Error(`Account ${accountId} not found`);
+        // Account doesn't exist - likely deleted or stale job
+        logger.warn(`Account ${accountId} not found in database, skipping job`);
+        return { status: 'skipped', reason: 'Account not found' };
       }
 
       if (account.status !== 'running') {

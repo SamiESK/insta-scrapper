@@ -16,7 +16,7 @@ export async function getAccounts(req, res, next) {
         status: true,
         proxy: true,
         sessionPath: true,
-        openaiPromptId: true,
+        outreachMessage: true,
         lastActive: true,
         createdAt: true,
         updatedAt: true,
@@ -77,7 +77,7 @@ export async function getAccount(req, res, next) {
 
 export async function createAccount(req, res, next) {
   try {
-    const { username, password, proxy, openaiPromptId } = req.body;
+    const { username, password, proxy, outreachMessage } = req.body;
 
     if (!username) {
       return res.status(400).json({ error: 'Username is required' });
@@ -91,7 +91,7 @@ export async function createAccount(req, res, next) {
         username,
         password: encryptedPassword,
         proxy: proxy || getProxyForAccount(Date.now()), // Temporary ID for proxy assignment
-        openaiPromptId: openaiPromptId || null,
+        outreachMessage: outreachMessage || null,
         sessionPath: null,
         status: 'idle'
       }
@@ -120,13 +120,13 @@ export async function createAccount(req, res, next) {
 export async function updateAccount(req, res, next) {
   try {
     const { id } = req.params;
-    const { username, password, proxy, status, openaiPromptId } = req.body;
+    const { username, password, proxy, status, outreachMessage } = req.body;
 
     const updateData = {
       ...(username && { username }),
       ...(proxy !== undefined && { proxy }),
       ...(status && { status }),
-      ...(openaiPromptId !== undefined && { openaiPromptId })
+      ...(outreachMessage !== undefined && { outreachMessage })
     };
 
     // Encrypt password if provided

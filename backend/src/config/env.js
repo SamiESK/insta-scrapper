@@ -17,7 +17,6 @@ export const config = {
   PLAYWRIGHT_HEADLESS: process.env.PLAYWRIGHT_HEADLESS === 'true',
   MAX_CONCURRENT_BOTS: parseInt(process.env.MAX_CONCURRENT_BOTS || '10', 10),
   LOG_LEVEL: process.env.LOG_LEVEL || 'info',
-  ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
-  OPENAI_API_KEY: process.env.OPENAI_API_KEY
+  ENCRYPTION_KEY: process.env.ENCRYPTION_KEY
 };
 
