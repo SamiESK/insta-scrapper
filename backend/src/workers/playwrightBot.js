@@ -1123,25 +1123,117 @@ async function processReelOutreach(page, account, reelUrl, username) {
     }
     if (!messageClicked) throw new Error('Message button not found');
 
+    // Wait for message input to appear and focus it
+    await page.waitForTimeout(1000);
+    const inputSelector = '[contenteditable="true"], textarea';
+    await page.waitForSelector(inputSelector, { timeout: 5000 }).catch(() => {
+      throw new Error('Message input not found');
+    });
+    
+    // Focus the input first
+    await page.click(inputSelector, { timeout: 3000 });
+    await page.waitForTimeout(300);
+
     // Input and send
     const msg = (account.outreachMessage || '').trim();
     if (!msg) throw new Error('Outreach message empty');
 
-    // Find an editable input and set text
-    const setOk = await page.evaluate((m) => {
-      const contentEditable = document.querySelector('[contenteditable]');
+    await saveLogToDB(account.id, 'info', `Typing message (length: ${msg.length})`);
+
+    // Try to set text using multiple methods for reliability
+    const textSet = await page.evaluate((m) => {
+      // Method 1: Try contenteditable div (Instagram's preferred method)
+      const contentEditable = document.querySelector('[contenteditable="true"]');
       if (contentEditable) {
-        contentEditable.innerText = m;
+        // Focus it first
+        contentEditable.focus();
+        
+        // Clear existing content first - select all and delete
+        const range = document.createRange();
+        range.selectNodeContents(contentEditable);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        // Clear the content
+        contentEditable.textContent = '';
+        contentEditable.innerHTML = '';
+        
+        // Set the text using textContent (preserves special characters correctly)
+        // textContent is better than innerText for special characters like em dashes
+        contentEditable.textContent = m;
+        
+        // Also set innerText as fallback (some Instagram versions might use this)
+        if (contentEditable.textContent !== m) {
+          contentEditable.innerText = m;
+        }
+        
+        // Trigger all necessary events to ensure Instagram recognizes the input
         contentEditable.dispatchEvent(new Event('input', { bubbles: true }));
-        return true;
+        contentEditable.dispatchEvent(new Event('change', { bubbles: true }));
+        contentEditable.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'a' }));
+        contentEditable.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'a' }));
+        
+        // Verify text was set
+        const setText = contentEditable.textContent || contentEditable.innerText || '';
+        return setText.length > 0 && setText.length >= m.length * 0.9; // Allow 10% tolerance for formatting
       }
+      
+      // Method 2: Try textarea
       const textarea = document.querySelector('textarea');
-      if (textarea) { textarea.value = m; textarea.dispatchEvent(new Event('input', { bubbles: true })); return true; }
+      if (textarea) {
+        textarea.focus();
+        textarea.value = '';
+        textarea.value = m;
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        textarea.dispatchEvent(new Event('change', { bubbles: true }));
+        return textarea.value.length > 0 && textarea.value.length >= m.length * 0.9;
+      }
+      
       return false;
     }, msg);
 
-    if (!setOk) {
-      await page.keyboard.type(msg, { delay: 20 });
+    // If setting text via evaluate failed, use keyboard typing as fallback
+    if (!textSet) {
+      await saveLogToDB(account.id, 'info', 'Text setting via evaluate failed, using keyboard typing');
+      
+      // Clear the input first
+      await page.click('[contenteditable="true"], textarea', { timeout: 3000 });
+      await page.keyboard.press('Control+A');
+      await page.keyboard.press('Delete');
+      await page.waitForTimeout(200);
+      
+      // Type the message character by character
+      await page.keyboard.type(msg, { delay: 10 });
+    }
+
+    // Wait for text to be fully entered and verify
+    await page.waitForTimeout(500);
+    
+    // Verify the message was set correctly
+    const verifyText = await page.evaluate(() => {
+      const contentEditable = document.querySelector('[contenteditable="true"]');
+      if (contentEditable) {
+        return (contentEditable.textContent || contentEditable.innerText || '').trim();
+      }
+      const textarea = document.querySelector('textarea');
+      if (textarea) {
+        return textarea.value.trim();
+      }
+      return '';
+    });
+
+    if (verifyText.length < msg.length * 0.8) {
+      await saveLogToDB(account.id, 'warn', `Message verification failed: expected ${msg.length} chars, got ${verifyText.length}`);
+      // Try one more time with keyboard typing
+      await page.click('[contenteditable="true"], textarea', { timeout: 3000 });
+      await page.keyboard.press('Control+A');
+      await page.keyboard.press('Delete');
+      await page.waitForTimeout(200);
+      await page.keyboard.type(msg, { delay: 15 });
+      await page.waitForTimeout(500);
+    } else {
+      await saveLogToDB(account.id, 'info', `Message verified: ${verifyText.length} characters set`);
     }
 
     // click send
